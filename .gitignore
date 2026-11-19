@@ -11,3 +11,6 @@ node_modules/
 .DS_Store
 # Your notes from Lab 1.
 notes.md
+
+# GitHub Copilot Evals keeps its local records of drafts and runs here (Lab 6)
+.copilot/evals/
