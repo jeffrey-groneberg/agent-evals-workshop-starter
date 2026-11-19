@@ -7,11 +7,11 @@ The project you work in during the **[Agent Evals Workshop](https://jeffrey-gron
 ## Get started
 
 1. Select **Use this template** > **Create a new repository** to make your own copy. You need your own copy for Lab 7, where GitHub Actions runs your evals on pull requests.
-2. Open your copy in a GitHub Codespace (**Code** > **Codespaces** > **...** > **New with options**, to fill in the recommended secret, your Copilot token), or clone it and open it in VS Code on your computer.
+2. Open your copy in a GitHub Codespace (**Code** > **Codespaces** > **Create codespace on main**), or clone it and open it in VS Code on your computer. A Codespace signs you in to GitHub Copilot by itself; on your computer, you sign in with the GitHub CLI (`gh auth login`).
 3. In the terminal, run `./scripts/check-setup.sh`.
 4. Continue with [Lab 0](https://jeffrey-groneberg.github.io/agent-evals-workshop/labs/lab-0-setup/) on the workshop site.
 
-The site's [Set up in a Codespace](https://jeffrey-groneberg.github.io/agent-evals-workshop/start/codespaces/) and [Set up on your computer](https://jeffrey-groneberg.github.io/agent-evals-workshop/start/local/) pages walk you through each step, including the token for GitHub Copilot.
+The site's [Set up in a Codespace](https://jeffrey-groneberg.github.io/agent-evals-workshop/start/codespaces/) and [Set up on your computer](https://jeffrey-groneberg.github.io/agent-evals-workshop/start/local/) pages walk you through each step, including how the labs sign in to GitHub Copilot.
 
 ## What's in here
 

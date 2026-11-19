@@ -57,34 +57,48 @@ fi
 if command -v gh >/dev/null 2>&1; then
   ok "GitHub CLI $(gh --version 2>/dev/null | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
 else
-  warn "GitHub CLI not found: you need it in Lab 7 (https://cli.github.com)"
+  warn "GitHub CLI not found: on your computer, you need it to sign in, and in Lab 7 (https://cli.github.com)"
 fi
 
 echo
 echo "GitHub Copilot sign-in (for the agent under test and the LLM judge)"
+in_codespace=false
+[[ "${CODESPACES:-}" == "true" ]] && in_codespace=true
+clean="Vally runs the agent in a clean, isolated Copilot home"
 if [[ -n "${COPILOT_GITHUB_TOKEN:-}" ]]; then
   if [[ "$COPILOT_GITHUB_TOKEN" =~ [[:space:]] ]]; then
     fail "COPILOT_GITHUB_TOKEN contains spaces or line breaks: paste the token again"
   elif [[ "$COPILOT_GITHUB_TOKEN" == ghp_* ]]; then
     fail "COPILOT_GITHUB_TOKEN is a classic token (ghp_), which Copilot doesn't accept: create a fine-grained token"
-  elif [[ "${EVALUATE_USE_HOST_COPILOT_HOME:-}" == "1" ]]; then
-    ok "COPILOT_GITHUB_TOKEN is set"
-    warn "EVALUATE_USE_HOST_COPILOT_HOME=1 is also set, so runs still see your own skills and plugins."
-    echo "      Run: unset EVALUATE_USE_HOST_COPILOT_HOME, then remove it from ~/.bashrc (Codespace)"
-    echo "      or comment it out again in .env (your computer)."
   else
-    ok "COPILOT_GITHUB_TOKEN is set: Vally runs the agent in a clean, isolated Copilot home"
+    case "$COPILOT_GITHUB_TOKEN" in
+      gho_*) source_name="COPILOT_GITHUB_TOKEN, from your GitHub CLI sign-in" ;;
+      github_pat_*) source_name="COPILOT_GITHUB_TOKEN, a fine-grained personal access token" ;;
+      *) source_name="COPILOT_GITHUB_TOKEN" ;;
+    esac
+    if [[ "${EVALUATE_USE_HOST_COPILOT_HOME:-}" == "1" ]]; then
+      ok "$source_name"
+      warn "EVALUATE_USE_HOST_COPILOT_HOME=1 is also set, so runs still see your own skills and plugins."
+      echo "      Run: unset EVALUATE_USE_HOST_COPILOT_HOME, then remove it from ~/.bashrc (Codespace)"
+      echo "      or comment it out again in .env (your computer)."
+    else
+      ok "$source_name: $clean"
+    fi
   fi
+elif $in_codespace && [[ -n "${GITHUB_TOKEN:-}" ]]; then
+  ok "Your Codespace's own token (GITHUB_TOKEN): $clean"
 elif [[ "${EVALUATE_USE_HOST_COPILOT_HOME:-}" == "1" ]]; then
   ok "EVALUATE_USE_HOST_COPILOT_HOME=1: Vally reuses your Copilot CLI sign-in (copilot login)"
   warn "Runs see your Copilot home, including your own skills and plugins. A token keeps runs clean."
 elif [[ -n "${GH_TOKEN:-}${GITHUB_TOKEN:-}" ]]; then
-  warn "Only GH_TOKEN or GITHUB_TOKEN is set. Vally will try it. If the test below fails to sign in,"
-  echo "      set COPILOT_GITHUB_TOKEN to a fine-grained token with the Copilot Requests permission."
+  ok "GH_TOKEN or GITHUB_TOKEN: Vally signs in with it. $clean"
+elif $in_codespace; then
+  fail "No sign-in found. A Codespace terminal normally has GITHUB_TOKEN: open a new terminal and run this"
+  echo "      check again. Still missing? Set COPILOT_GITHUB_TOKEN as described on the workshop site,"
+  echo "      under Set up in a Codespace > If Lab 0 can't sign in."
 else
-  fail "Vally can't find a Copilot sign-in. Recommended: set COPILOT_GITHUB_TOKEN to a fine-grained"
-  echo "      token with the Copilot Requests permission. Or run: copilot login"
-  echo "      and then: export EVALUATE_USE_HOST_COPILOT_HOME=1"
+  fail "No sign-in found. Run: gh auth login   then load your settings again: set -a; source .env; set +a"
+  echo "      (.env reads your GitHub CLI sign-in into COPILOT_GITHUB_TOKEN; no .env yet? cp .env.example .env)"
 fi
 agent_model=$(sed -nE 's/^  model: ([A-Za-z0-9._-]+).*/\1/p' lab-files/lab-0/setup-check.eval.yaml 2>/dev/null | head -1)
 ok "Agent model in the eval files: ${agent_model:-unknown} (not on your plan? scripts/use-model.sh <model>)"

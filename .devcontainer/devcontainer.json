@@ -28,11 +28,5 @@
         "redhat.vscode-yaml"
       ]
     }
-  },
-  "secrets": {
-    "COPILOT_GITHUB_TOKEN": {
-      "description": "Recommended: a fine-grained personal access token (owner: your personal account) with the account permission Copilot Requests. Vally and the Copilot CLI use it to run the agent under test and the LLM judge. Never commit or share it.",
-      "documentationUrl": "https://jeffrey-groneberg.github.io/agent-evals-workshop/start/codespaces/"
-    }
   }
 }
