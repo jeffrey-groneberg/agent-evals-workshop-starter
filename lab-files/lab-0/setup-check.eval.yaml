@@ -1,0 +1,17 @@
+# Lab 0: one tiny real run. It proves that Vally can reach GitHub Copilot with your sign-in.
+# It uses one Copilot request. Run it with:
+#   vally eval -e lab-files/lab-0/setup-check.eval.yaml
+name: setup-check
+description: One small real run that checks that the agent under test (GitHub Copilot) answers.
+defaults:
+  executor: copilot-sdk     # the agent under test: GitHub Copilot, driven through the Copilot SDK
+  model: claude-sonnet-5.5  # pinned, so results are comparable (scripts/use-model.sh changes it)
+  runs: 1                   # one trial is enough for a connection check
+  timeout: 120s
+stimuli:
+  - name: says-ready
+    prompt: Reply with the single word READY and nothing else. Do not use any tools.
+    graders:
+      - type: output-contains
+        name: answer-says-ready
+        config: { substring: READY }

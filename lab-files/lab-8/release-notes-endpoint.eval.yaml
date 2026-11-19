@@ -1,0 +1,53 @@
+# Lab 8, part B: the same eval, with a model on YOUR endpoint as the agent under test
+# (bring your own key for the agent, not only for the judge). No Copilot request is used.
+#
+#   cp lab-files/lab-8/release-notes-endpoint.eval.yaml evals/
+#   vally eval -e evals/release-notes-endpoint.eval.yaml \
+#     --param AGENT_BASE_URL="$LLM_BASE_URL" \
+#     --param AGENT_MODEL="$LLM_MODEL"
+name: release-notes-on-endpoint
+description: The release-notes eval with the agent's model served by your own endpoint.
+type: capability
+defaults:
+  model: ${AGENT_MODEL=set-your-deployment-name}   # the deployment name on your endpoint
+  runs: 3
+  timeout: 180s
+  executor:
+    name: copilot-sdk                 # the same agent harness as before ...
+    config:
+      provider:                       # ... but its model calls go to your endpoint
+        type: azure
+        baseUrl: ${AGENT_BASE_URL=https://set-your-endpoint.invalid/openai/v1/}   # replaced by --param
+        wireApi: responses
+        apiKeyEnv: LLM_API_KEY
+agent_environment:
+  skills:
+    - ../.github/skills/release-notes
+  files:
+    - src: ../backlog.json
+      dest: backlog.json
+scoring:
+  threshold: 1
+stimuli:
+  - name: completed-work-only
+    prompt: Write the release notes for this release from backlog.json.
+    graders:
+      - type: output-contains
+        name: leaves-out-unfinished-export
+        config: { substring: CT-102, negate: true }
+      - type: output-contains
+        name: includes-done-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: includes-done-dark-mode
+        config: { substring: CT-103 }
+      - type: skill-invocation
+        name: release-notes-skill-used
+        config:
+          required:
+            - release-notes
+      - type: file-contains
+        name: backlog-still-in-progress
+        config:
+          path: backlog.json
+          value: '"status": "in-progress"'

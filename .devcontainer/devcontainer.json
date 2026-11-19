@@ -1,0 +1,37 @@
+{
+  "name": "Agent Evals Workshop",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "waitFor": "postCreateCommand",
+  "forwardPorts": [
+    3200
+  ],
+  "portsAttributes": {
+    "3200": {
+      "label": "Vally dashboard",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+  "secrets": {
+    "COPILOT_GITHUB_TOKEN": {
+      "description": "Recommended: a fine-grained personal access token (owner: your personal account) with the account permission Copilot Requests. Vally and the Copilot CLI use it to run the agent under test and the LLM judge. Never commit or share it.",
+      "documentationUrl": "https://jeffrey-groneberg.github.io/agent-evals-workshop/start/codespaces/"
+    }
+  }
+}

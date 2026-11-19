@@ -1,0 +1,74 @@
+# Lab 2: a control eval. It tests the checks, not the agent.
+#
+# The mock executor calls no model. It returns each stimulus's prompt text as the answer,
+# so every prompt below is a hand-written sample answer. That makes this eval free and
+# deterministic: run it as often as you like.
+#
+# What you want to see: the two good answers pass, the wrong and the empty answer fail.
+name: release-notes-check-controls
+description: >-
+  Controls for the release-notes checks. A known-good answer and an acceptable alternative
+  must pass; a wrong answer and an empty answer must fail. No model, no cost.
+defaults:
+  executor: mock   # no model, no cost: the "answer" is the prompt text itself
+  runs: 1          # a mock answer never changes, so one trial is enough
+  timeout: 60s
+scoring:
+  threshold: 1     # a trial passes only when its score reaches 1, that is, every check passes
+stimuli:
+  # Good: completed work only, with a summary sentence.
+  - name: known-good-answer
+    prompt: |
+      This release makes finding and reading your work easier.
+      - CT-101: Search across all projects
+      - CT-103: Dark mode for the dashboard
+    graders:
+      - type: output-contains
+        name: good-includes-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: good-includes-dark-mode
+        config: { substring: CT-103 }
+      # TODO (Lab 2, step 4): add a check that the answer does NOT contain CT-102.
+
+  # Also good: different order and wording. Good checks don't depend on exact formatting.
+  - name: acceptable-alternative
+    prompt: |
+      Dark mode and cross-project search are here.
+      - CT-103: Dark mode for the dashboard
+      - CT-101: Search across all projects
+    graders:
+      - type: output-contains
+        name: alt-includes-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: alt-includes-dark-mode
+        config: { substring: CT-103 }
+      # TODO (Lab 2, step 4): add a check that the answer does NOT contain CT-102.
+
+  # Wrong: it announces CT-102, which is still in progress. This is the bug you'll meet in Lab 3.
+  - name: wrong-answer
+    prompt: |
+      - CT-101: Search across all projects
+      - CT-102: Export reports to CSV
+      - CT-103: Dark mode for the dashboard
+    graders:
+      - type: output-contains
+        name: wrong-includes-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: wrong-includes-dark-mode
+        config: { substring: CT-103 }
+      # TODO (Lab 2, step 4): add a check that the answer does NOT contain CT-102.
+
+  # Wrong: it announces nothing.
+  - name: empty-answer
+    prompt: Nothing new to announce in this release.
+    graders:
+      - type: output-contains
+        name: empty-includes-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: empty-includes-dark-mode
+        config: { substring: CT-103 }
+      # TODO (Lab 2, step 4): add a check that the answer does NOT contain CT-102.

@@ -1,0 +1,9 @@
+# Where Vally finds evals, and named suites (groups of evals) that you can run together.
+# Docs: https://microsoft.github.io/vally/reference/vally-yaml/
+paths:
+  evals: [evals]
+  evalFilenames: ["*.eval.yaml"]
+suites:
+  # `vally eval --suite smoke` runs every eval tagged `lane: ci` (you add that tag in Lab 7).
+  smoke:
+    filter: { lane: ci }

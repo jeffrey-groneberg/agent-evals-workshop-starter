@@ -1,0 +1,48 @@
+# Lab 3: the real eval. GitHub Copilot, the agent under test, runs the release-notes skill in a
+# fresh, isolated workspace. Then the graders check its answer and what it left in the workspace.
+#
+# Copy it into evals/ and run it:
+#   cp lab-files/lab-3/release-notes.eval.yaml evals/
+#   vally eval -e evals/release-notes.eval.yaml
+name: release-notes-completed-only
+description: The release-notes skill announces completed work only and leaves the in-progress status in backlog.json alone.
+type: capability            # intent: "can the agent do this yet?" (a regression eval guards what already works)
+defaults:
+  executor: copilot-sdk     # the agent under test: GitHub Copilot, driven through the Copilot SDK
+  model: claude-sonnet-5.5  # pinned, so results are comparable (scripts/use-model.sh changes it)
+  runs: 3                   # trials per stimulus: agents aren't deterministic, so one run proves little
+  timeout: 120s             # per trial
+agent_environment:          # what the agent finds in its workspace, rebuilt for every trial
+  skills:
+    - ../.github/skills/release-notes   # the skill under test (paths are relative to this file)
+  files:
+    - src: ../backlog.json              # copied into the workspace as backlog.json
+      dest: backlog.json
+scoring:
+  threshold: 1              # a trial passes only when every check passes
+stimuli:
+  - name: completed-work-only
+    prompt: Write the release notes for this release from backlog.json.
+    graders:
+      # Code checks on the final answer (the outcome you can see)
+      - type: output-contains
+        name: leaves-out-unfinished-export
+        config: { substring: CT-102, negate: true }   # passes when CT-102 is NOT in the answer
+      - type: output-contains
+        name: includes-done-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: includes-done-dark-mode
+        config: { substring: CT-103 }
+      # A check on the transcript (how the agent got there)
+      - type: skill-invocation
+        name: release-notes-skill-used
+        config:
+          required:
+            - release-notes
+      # A check on the workspace (side effects): backlog.json still contains the in-progress status
+      - type: file-contains
+        name: backlog-still-in-progress
+        config:
+          path: backlog.json
+          value: '"status": "in-progress"'

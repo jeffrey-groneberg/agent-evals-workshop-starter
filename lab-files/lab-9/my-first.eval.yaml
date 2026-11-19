@@ -1,0 +1,33 @@
+# Lab 9: a starting point for an eval of YOUR skill, agent instructions or MCP tool.
+# Replace every TODO, then: vally lint -e evals/my-first.eval.yaml --strict
+name: TODO-short-name
+description: "TODO: one sentence on what good behavior looks like"
+type: capability
+defaults:
+  executor: copilot-sdk
+  runs: 3
+  timeout: 120s
+agent_environment:
+  skills:
+    - ../.github/skills/TODO-your-skill      # a folder that contains SKILL.md
+  files:
+    - src: ../TODO-input-file                # anything the agent needs to read
+      dest: TODO-input-file
+scoring:
+  threshold: 1
+stimuli:
+  - name: TODO-typical-request
+    prompt: TODO the request a real user would type
+    graders:
+      - type: output-contains
+        name: TODO-must-mention
+        config: { substring: TODO }
+      - type: output-contains
+        name: TODO-must-not-mention
+        config: { substring: TODO, negate: true }
+      - type: skill-invocation
+        name: TODO-skill-used
+        config:
+          required:
+            - TODO-your-skill-name           # the name in SKILL.md's front matter
+  # Add a second stimulus for an edge case: an empty input, a tricky item, a request to refuse.

@@ -1,0 +1,56 @@
+# Lab 5 solution (step 6): the real eval plus an LLM judge.
+# The agent under test and the judge both run on GitHub Copilot, with models from two different
+# model families. Run it:
+#   vally eval -e evals/release-notes-judged.eval.yaml
+name: release-notes-judged
+description: >-
+  The release-notes skill announces completed work only, starts with a summary sentence and stays
+  friendly and short. Code checks for the facts, an LLM judge for the rest.
+type: capability
+defaults:
+  executor: copilot-sdk
+  model: claude-sonnet-5.5  # pinned, so results are comparable (scripts/use-model.sh changes it)
+  runs: 3
+  timeout: 120s
+  judge_model: ${JUDGE_MODEL=gpt-5.6-luna}   # the judge: a Copilot model, from another model family than the agent's
+  judge_timeout: 2m
+agent_environment:
+  skills:
+    - ../.github/skills/release-notes
+  files:
+    - src: ../backlog.json
+      dest: backlog.json
+scoring:
+  threshold: 1
+stimuli:
+  - name: completed-work-only
+    prompt: Write the release notes for this release from backlog.json.
+    rubric:
+      - The answer announces CT-101 (Search across all projects) and CT-103 (Dark mode for the dashboard) as part of this release.
+      - The answer does not mention CT-102 (Export reports to CSV) anywhere, not even to say that it was left out or comes later.
+      - The answer starts with one short sentence that summarizes the release.
+      - The tone is friendly and the answer is short.
+    graders:
+      - type: output-contains
+        name: leaves-out-unfinished-export
+        config: { substring: CT-102, negate: true }
+      - type: output-contains
+        name: includes-done-search
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: includes-done-dark-mode
+        config: { substring: CT-103 }
+      - type: skill-invocation
+        name: release-notes-skill-used
+        config:
+          required:
+            - release-notes
+      - type: file-contains
+        name: backlog-still-in-progress
+        config:
+          path: backlog.json
+          value: '"status": "in-progress"'
+      - type: prompt
+        name: judge-release-notes-quality
+        config:
+          scoring: binary

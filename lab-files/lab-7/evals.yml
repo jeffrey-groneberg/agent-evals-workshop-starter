@@ -1,0 +1,44 @@
+# Lab 7: run the smoke suite on every pull request and post the result as a PR comment.
+# Copy it into place:  mkdir -p .github/workflows && cp lab-files/lab-7/evals.yml .github/workflows/evals.yml
+#
+# Billing: in a personal repository, the runs use the repository owner's Copilot seat. In an
+# organization repository, an admin must allow "Copilot CLI billed to the organization".
+name: Evals
+
+on:
+  pull_request:
+    paths:
+      - .github/skills/**
+      - evals/**
+      - backlog.json
+      - .vally.yaml
+      - .github/workflows/evals.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    # Run for manual starts and for pull requests from this repository (not from forks).
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      copilot-requests: write   # lets the job's own token run the agent under test with Copilot
+      pull-requests: write      # lets the action post and update one sticky PR comment
+    concurrency:
+      group: evals-${{ github.workflow_ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: github/evals-action@v0
+        with:
+          # Lint and run only evals/. lab-files/ and solutions/ hold starters that work only once
+          # copied into evals/. Vally finds .vally.yaml in the repository root by itself.
+          working-directory: evals
+          suite: smoke           # runs the evals tagged lane: ci
+          vally-version: '0.21.0'

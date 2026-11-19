@@ -1,0 +1,20 @@
+# Lab 8: compare two models as the agent under test. Same eval, same skill; only the model differs.
+#
+# 1. List the models your Copilot plan offers: start `copilot`, type /model, then /exit.
+# 2. Put two of those model IDs below (replace both example values).
+# 3. Check the plan without model calls:
+#      vally experiment run experiments/models.experiment.yaml --dry-run
+# 4. Run it:
+#      vally experiment run experiments/models.experiment.yaml
+name: release-notes-models
+evals:
+  - ../evals/release-notes.eval.yaml
+vary: [/defaults/model]
+baseline: model-a
+variants:
+  model-a:
+    overrides:
+      model: claude-sonnet-5.5   # example; replace with a model from /model
+  model-b:
+    overrides:
+      model: gpt-5.6-luna        # example; replace with a model from /model

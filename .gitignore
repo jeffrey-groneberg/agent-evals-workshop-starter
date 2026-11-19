@@ -1,0 +1,13 @@
+# Eval output: results, transcripts and dashboards stay on your machine.
+vally-results/
+vally-experiment-results/
+.cache/
+.catch-up-backup/
+# Local settings with your endpoint and key.
+.env
+*.local.yaml
+*.params.yaml
+node_modules/
+.DS_Store
+# Your notes from Lab 1.
+notes.md

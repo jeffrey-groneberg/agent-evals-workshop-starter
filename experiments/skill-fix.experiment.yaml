@@ -1,0 +1,21 @@
+# Lab 4: a controlled experiment. Same eval, same model, same settings; only the skill differs.
+#
+#   before = the original skill, frozen in skill-versions/before/
+#   after  = your fixed skill in .github/skills/release-notes/
+#
+# Run it:  vally experiment run experiments/skill-fix.experiment.yaml
+# Plan only, no model calls:  vally experiment run experiments/skill-fix.experiment.yaml --dry-run
+name: release-notes-skill-fix
+evals:
+  - ../evals/release-notes.eval.yaml
+# The only setting allowed to differ between variants. Any other difference is an error,
+# so a result can't come from a change you didn't mean to make.
+vary: [/environment/skills]
+baseline: before
+variants:
+  before:
+    environment:
+      skills: ["../skill-versions/before/release-notes"]
+  after:
+    environment:
+      skills: ["../.github/skills/release-notes"]
