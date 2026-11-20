@@ -22,7 +22,7 @@ The site's [Set up in a Codespace](https://jeffrey-groneberg.github.io/agent-eva
 | `evals/` | Your evals. Lab 2 starts here. |
 | `experiments/` | Experiment files for Labs 4 and 8 |
 | `lab-files/` | Starter files for each lab |
-| `solutions/` | Finished files for each lab |
+| `solutions/` | Finished files for Labs 2, 4, 5 and 7, and a reference draft for Lab 6. The site shows each one in the lab's **Solution** section. |
 | `skill-versions/before/` | A frozen copy of the original skill, for the experiment in Lab 4 |
 | `scripts/check-setup.sh` | Checks your tools, your sign-in and, if you use one, your own model endpoint |
 | `scripts/answers.sh` | Shows each trial's answer, tool calls and checks |

@@ -1,0 +1,61 @@
+# Lab 6 reference: a draft that passes the review checklist in step 5. Copilot's drafts differ from
+# run to run, so compare yours with this one, row by row. The comments name the checklist rows.
+#
+# Copy it into evals/ and run it:
+#   cp solutions/lab-6/release-notes-reference.eval.yaml evals/
+#   vally eval -e evals/release-notes-reference.eval.yaml
+name: release-notes-reference
+description: >-
+  Good release notes announce only backlog items whose status is done, never mention unfinished
+  items anywhere, start with one short summary sentence, and leave backlog.json unchanged.
+type: capability
+defaults:
+  executor: copilot-sdk
+  model: claude-sonnet-5.5                   # a pinned model for the agent (scripts/use-model.sh changes it)
+  runs: 3                                    # several trials: one run is an anecdote
+  timeout: 120s
+  judge_model: ${JUDGE_MODEL=gpt-5.6-luna}   # the draft has an LLM judge, so it pins the judge's model too
+  judge_timeout: 2m
+agent_environment:                           # the skill and backlog.json, so the agent can do the task
+  skills:
+    - ../.github/skills/release-notes
+  files:
+    - src: ../backlog.json
+      dest: backlog.json
+scoring:
+  threshold: 1                               # a sensible threshold: a trial passes only when every check passes
+stimuli:
+  - name: completed-work-only
+    # A real request: it names neither the skill nor the expected answer.
+    prompt: Write the release notes for this release from backlog.json.
+    rubric:
+      - The answer announces CT-101 (Search across all projects) and CT-103 (Dark mode for the dashboard) as part of this release.
+      - The answer does not mention CT-102 (Export reports to CSV) anywhere, in any words, not even to say that it was left out or comes later.
+      - The answer starts with one short sentence that summarizes the release.
+    graders:
+      # A negative check (Lab 2): the bug you care about is something extra, the unfinished item.
+      - type: output-contains
+        name: never-mentions-unfinished-ct102
+        config: { substring: CT-102, negate: true }
+      - type: output-contains
+        name: announces-done-ct101
+        config: { substring: CT-101 }
+      - type: output-contains
+        name: announces-done-ct103
+        config: { substring: CT-103 }
+      # A check on the transcript (Lab 3): the agent used the skill.
+      - type: skill-invocation
+        name: release-notes-skill-used
+        config:
+          required:
+            - release-notes
+      # A check on the workspace (Lab 3), stricter than Lab 3's: the workspace diff has a section for
+      # every file the agent changed, and none of them may be backlog.json.
+      - type: diff-not-contains
+        name: backlog-json-unchanged
+        config: { value: 'diff --git a/backlog.json' }
+      # The LLM judge, for what code can't see: the summary sentence, and CT-102 in other words.
+      - type: prompt
+        name: judge-summary-sentence-done-only
+        config:
+          scoring: binary
